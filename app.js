@@ -119,7 +119,7 @@ twlanLang.controller('DiffController', ['store', '$timeout', '$scope', function(
             });
         });
         ret.sectionKeys = sectionKeysRaw;
-        stats.percentage = Math.max(0, Math.min(100, 100 - Math.round(stats.missingKeys.length / stats.keys * 100)));
+        stats.percentage = Math.max(0, Math.min(100, 100 - Math.ceil(stats.missingKeys.length / stats.keys * 100)));
         stats.progress = stats.percentage + '% of ' + $scope.lang.src + ' to ' + $scope.lang.target;
         ret.stats = stats;
         postMessage(ret);
@@ -143,11 +143,17 @@ twlanLang.controller('DiffController', ['store', '$timeout', '$scope', function(
             var file = evt.target.files[0];
             if (file)
             {
+                var fileName = file.name;
                 var reader = new FileReader();
                 reader.readAsText(file, "UTF-8");
                 reader.onload = function (r_evt) {
-                    store.data[type] = JSON.parse(r_evt.target.result);
-                    $scope.lang[type] = type;
+                    store.data[file.name] = JSON.parse(r_evt.target.result);
+                    $scope.lang[type] = file.name;
+                    var allowed = [$scope.lang.target, $scope.lang.src];
+                    Object.keys(store.data).forEach(function (k)
+                    {
+                        if (allowed.indexOf(k) == -1) delete store.data[k];
+                    });
                     $scope.$apply();
                 };
                 reader.onerror = alert;
@@ -190,23 +196,32 @@ twlanLang.controller('DiffController', ['store', '$timeout', '$scope', function(
     };
 
     $scope.highlight = {s: null, e: null};
-    $scope.trySuggestion = function(suggestion, sectionKey, entryKey)
+    $scope.bak = null;
+
+    $scope.showSuggestion = function(suggestion, sectionKey, entryKey, hover)
     {
+        if (hover && $scope.highlight.s != null || !hover && $scope.highlight.s == null) return;
         var targets = store.data[$scope.lang.target];
         if (!targets[suggestion.section]) return alert('Not set on target');
-        $scope.highlight.s = sectionKey;
-        $scope.highlight.e = entryKey;
-        $timeout(function() {
-            
+        if (hover)
+        {
+            $scope.highlight.s = sectionKey;
+            $scope.highlight.e = entryKey;
             var val = targets[suggestion.section][suggestion.key];
-            var result = confirm("Do you want to use: \"" + val + "\" for the highlighted field?");
-            $scope.highlight.s = $scope.highlight.e = null;
-            if (result) 
-            {
-                if (!targets[sectionKey]) targets[sectionKey] = {};
-                targets[sectionKey][entryKey] = val;
-            }
-        });
+            if (!targets[sectionKey]) targets[sectionKey] = {};
+            else $scope.bak = targets[sectionKey][entryKey];
+            targets[sectionKey][entryKey] = val; 
+        }
+        else 
+        {
+            targets[sectionKey][entryKey] = $scope.bak;
+            $scope.highlight.s = $scope.highlight.e = $scope.bak = null;
+        }
+    };
+
+    $scope.applySuggestion = function(suggestion, sectionKey, entryKey)
+    {
+        $scope.highlight.s = $scope.highlight.e = $scope.bak = null;
     };
 
     $scope.exportTarget = function ()
@@ -215,34 +230,29 @@ twlanLang.controller('DiffController', ['store', '$timeout', '$scope', function(
         {
             return value.replace(/(")/g, '\\$1');
         };
-        var makeDLinks = function(target, lang) 
+        var getValue = function(lang)
         {
             var langObj = store.data[lang];
-            var ini = [];
-            Object.keys(langObj).forEach(function (_section)
-            {
-                if (ini.length > 0) ini.push('');
-                ini.push('[' + _section + ']');
-                var secObj = langObj[_section];
-                Object.keys(secObj).forEach(function (_key) {
-                    ini.push(_key + '="' + _escape(secObj[_key]) + '"');
-                });
-            });
-            clipBoardValue = ini.join("\n");
+            return JSON.stringify(langObj);
+        };
+        var makeDLinks = function(target, lang) 
+        {
+            var tmpVal = getValue(lang);
             target.empty().append($('<a>')
-                .attr('download', lang + '.ini')
-                .attr('href', 'data:text/plain;charset=UTF-8,' + encodeURIComponent(clipBoardValue))
+                .attr('download', lang)
+                .attr('href', 'data:text/plain;charset=UTF-8,' + encodeURIComponent(tmpVal))
                 .text('Download'));
         };
+        clipBoardValue = getValue($scope.lang.target);
         if ("download" in document.createElement("a"))
         {
             makeDLinks($('#target_file'), $scope.lang.target);
             makeDLinks($('#src_file'), $scope.lang.src);
-            alert("Now use a download link or press CTRL+C and post it at twlan.org");
+            alert("Now use a download link or press CTRL+C and post it at twlan.org! If you change something do not forget to click the export button again!");
         }
         else
         {
-            alert("Now press CTRL+C and post it at twlan.org");
+            alert("Now press CTRL+C and post it at twlan.org! If you change something do not forget to click the export button again!");
         }
     };
 

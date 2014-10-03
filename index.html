@@ -3,12 +3,14 @@
 <head>
     <title>TWLan Language Tool</title>
     <meta charset="UTF-8">
-    <link rel="stylesheet" href="//maxcdn.bootstrapcdn.com/bootstrap/3.2.0/css/bootstrap.min.css">
+    <link rel="stylesheet" href="//cdnjs.cloudflare.com/ajax/libs/bootswatch/3.2.0+2/cosmo/bootstrap.min.css">
     <script src="//ajax.googleapis.com/ajax/libs/jquery/2.1.1/jquery.min.js"></script>
     <script type="text/javascript" src="//ajax.googleapis.com/ajax/libs/angularjs/1.3.0-rc.4/angular.min.js"></script>
     <script type="text/javascript" src="app.js"></script>
     <style type="text/css">
         html, body, .container { height: 100%; }
+        textarea { resize: none; }
+        .container, .header-intro { width: 100%; }
         .row { display: table-row; }
         .header-cell { border-bottom: 2px solid #ddd; }
         .cell, .header-cell { 
@@ -16,28 +18,39 @@
             vertical-align: top;
             padding: 8px;
         }
+        .min-cell { width: 1px; white-space: nowrap; }
         .file-dl {
             text-align: center;
         }
         .cell {
             border-top: 1px solid #ddd;
         }
-        .selector_area { display: table; }
+        .header-intro, .selector_area { display: table; }
         .entry { width: 100%; display: table; }
         .pdivider { border-right: 1px solid #ddd;}
-        .progress { margin-top: 30px;}
+        .progress { margin-top: 9px;}
         .save-btn { float: right;}
         .sidebar {
             position: absolute;
             height: 100%;
             overflow-y: auto;
         }
-        .header {
-            height: 215px;
+        .header-area {
+            height: 265px;
+        }
+        .section-header {
+            text-align: center;
+        }
+        .progress { 
+            height: 20px;
+        }
+        .progress .progress-bar {
+            font-size: 20px;
+            line-height: 20px;
         }
         #main-container { 
             overflow-y: scroll;
-            height: calc(100% - 215px);
+            height: calc(100% - 265px);
         }
 
         #clipboard-container {
@@ -59,12 +72,12 @@
     </style>
 </head>
 <body ng-app="twlanLang" ng-controller="DiffController">
-    <ul id="sidebar" class="nav nav-pills nav-stacked sidebar col-xs-2" ng-if="sections">
+    <ul id="sidebar" class="nav nav-pills nav-stacked sidebar col-xs-3">
         <li ng-repeat="s in sections" ng-class="{'active': section.key==s}">
-            <a href="#" class="text-success" ng-class="{'text-danger': stats.missingSections.indexOf(s) != -1, 
-            'text-warning': stats.incompleteSections.indexOf(s) != -1}"
+            <a href="#"
             ng-init="section.key=!section.key?s:section.key;" ng-click="section.key=s;">
-                <b>{{s}}</b>
+                <b ng-class="{'text-success': section.key!=s, 'text-danger': stats.missingSections.indexOf(s) != -1, 
+                    'text-warning': stats.incompleteSections.indexOf(s) != -1}">{{s}}</b>
                 <span ng-if="stats.missingSections.indexOf(s) != -1" class="pull-right label label-danger"> 
                 Section Missing <br>{{ stats.missingSectionKeys[s].length }} entries missing 
                 </span>
@@ -75,17 +88,20 @@
         </li>
     </ul>
     <div class="container">
-        <div class="col-xs-offset-2 col-xs-10 header">
-            <h1 class="pull-left">TWLan Language Tool</h1>
-            <div class="progress">
-                  <div ng-show="stats" 
-                  id="progress_bar" class="progress-bar progress-bar-info" role="progressbar" aria-valuenow="{{stats.percentage}}" 
-                  aria-valuemin="0" aria-valuemax="100" ng-style="{'width': stats.percentage + '%'}">
-                    {{stats.progress}} translated
-                  </div>
+        <div class="col-xs-offset-3 header-area">
+            <div class="header-intro">
+                <h1 class="cell min-cell">TWLan Language Tool</h1>
+                <div class="cell">
+                    <div class="progress">
+                          <div ng-show="stats" 
+                          id="progress_bar" class="progress-bar progress-bar-info" role="progressbar" aria-valuenow="{{stats.percentage}}" 
+                          aria-valuemin="0" aria-valuemax="100" ng-style="{'width': stats.percentage + '%'}">
+                            {{stats.progress}} translated
+                          </div>
+                    </div>
+                </div>
             </div>
-
-            <a ng-show="stats" ng-click="exportTarget()" class="btn btn-primary btn-lg save-btn" role="button" onclick="_export()">Export Target</a>
+            <div class="clearfix"></div>
             <div class="selector_area pull-left">
                 <div class="row">
                     <div class="cell pdivider"><b>Source language</b></div>
@@ -93,6 +109,7 @@
                     <div class="cell pdivider" ng-if="stats"><b>Missing sections</b></div>
                     <div class="cell pdivider" ng-if="stats"><b>Incomplete sections</b></div>
                     <div class="cell pdivider" ng-if="stats"><b>Missing keys</b></div>
+                    <div class="cell pdivider" ng-if="stats"></div>
                 </div>
                 <div class="row">
                     <div class="cell pdivider">
@@ -104,6 +121,9 @@
                     <div class="cell pdivider" ng-if="stats"><b>{{stats.missingSections.length}}</b></div>
                     <div class="cell pdivider" ng-if="stats"><b>{{stats.incompleteSections.length}}</b></div>
                     <div class="cell pdivider" ng-if="stats"><b>{{stats.missingKeys.length}}</b></div>
+                    <div class="cell pdivider" ng-if="stats">
+                        <a ng-click="exportTarget()" class="btn btn-primary btn-lg save-btn" role="button">Export</a>
+                    </div>
                 </div>
                 <div class="row">
                     <div class="cell pdivider file-dl" id="src_file"></div>
@@ -111,37 +131,40 @@
                 </div>
             </div>
         </div>
-        <div class="col-xs-offset-2 col-xs-10" id="main-container">
+        <div ng-if="stats" class="col-xs-offset-3" id="main-container">
             
             <div class="clearfix"></div>
-            <hr>
-            <div id="content_area">
-                <div ng-if="section.key" ng-class="{'panel-danger': !store.data[lang.target][section.key], 'panel-warning': !store.data[lang.src][section.key]}"
-                    class="panel panel-default">
-                    <div class="panel-heading">{{section.key}}</div>
-                    <div class="panel-body entry">
-                        <div class="header-cell" style="width: 20%;"><b>Name</b></div>
-                        <div class="header-cell pdivider"><b> Source Entry Language: {{lang.src}}</b></div>
-                        <div class="header-cell"><b> Target Entry Language: {{lang.target}}</b></div>
-                        <div class="row form-group item" 
-                            ng-class="{'bg-danger': !store.data[lang.target][section.key][entryKey], 'bg-warning': !store.data[lang.src][section.key][entryKey]}"
-                            ng-repeat="entryKey in sectionKeys[section.key]">
-                            <div class="cell">
-                                <b>{{::entryKey}}</b>
+            <div ng-class="{'bg-danger': stats.missingSections.indexOf(section.key) != -1, 
+                'bg-warning': stats.incompleteSections.indexOf(section.key) != -1}"
+                class="bg-primary">
+                    <div class="section-header">{{section.key}}</div>
+            </div>
+            <div id="content_area" class="entry">
+                <div class="row">
+                    <div class="header-cell" style="width: 20%;"><b>Name</b></div>
+                    <div class="header-cell pdivider"><b> Source Entry Language: {{lang.src}}</b></div>
+                    <div class="header-cell"><b> Target Entry Language: {{lang.target}}</b></div>
+                </div>
+                <div class="row form-group item" 
+                    ng-class="{'bg-danger': !store.data[lang.target][section.key][entryKey], 'bg-warning': !store.data[lang.src][section.key][entryKey]}"
+                    ng-repeat="entryKey in sectionKeys[section.key]">
+                    <div class="cell">
+                        <b>{{::entryKey}}</b>
 
-                                <a href ng-click="trySuggestion(suggestion, section.key, entryKey)"
-                                ng-repeat="suggestion in srcMap[store.data[lang.src][section.key][entryKey]]|filter:notSelf(section.key, entryKey)">
-                                <br>{{::suggestion.section}}.{{::suggestion.key}}
-                                </a>
-                            </div>
-                            <div class="cell pdivider">
-                                <textarea ng-model="store.data[lang.src][section.key][entryKey]" rows="3" class="form-control"></textarea>
-                            </div>
-                            <div class="cell pdivider" ng-class="{'bg-info': highlight.s == section.key && highlight.e == entryKey}">
-                                <textarea ng-model="store.data[lang.target][section.key][entryKey]" 
-                                rows="3" class="form-control"></textarea>
-                            </div>
-                        </div>
+                        <a href 
+                        ng-mouseenter="showSuggestion(suggestion, section.key, entryKey, true)"
+                        ng-mouseleave="showSuggestion(suggestion, section.key, entryKey, false)"
+                        ng-click="applySuggestion(suggestion, section.key, entryKey)"
+                        ng-repeat="suggestion in srcMap[store.data[lang.src][section.key][entryKey]]|filter:notSelf(section.key, entryKey)">
+                        <br>{{::suggestion.section}}.{{::suggestion.key}}
+                        </a>
+                    </div>
+                    <div class="cell pdivider">
+                        <textarea ng-model="store.data[lang.src][section.key][entryKey]" rows="3" class="form-control"></textarea>
+                    </div>
+                    <div class="cell pdivider" ng-class="{'bg-info': highlight.s == section.key && highlight.e == entryKey}">
+                        <textarea ng-model="store.data[lang.target][section.key][entryKey]" 
+                        rows="3" class="form-control"></textarea>
                     </div>
                 </div>
             </div>
