@@ -141,7 +141,7 @@
             </div>
             <div id="content_area" class="entry">
                 <div class="row">
-                    <div class="header-cell" style="width: 20%;"><b>Name</b></div>
+                    <div class="header-cell" style="width: 20%;"><b>Name</b> <a href="" ng-click="addNew(section.key, entryKey)">(Add new)</a></div>
                     <div class="header-cell pdivider"><b> Source Entry Language: {{lang.src}}</b></div>
                     <div class="header-cell"><b> Target Entry Language: {{lang.target}}</b></div>
                 </div>
@@ -149,8 +149,8 @@
                     ng-class="{'bg-danger': !store.data[lang.target][section.key][entryKey], 'bg-warning': !store.data[lang.src][section.key][entryKey]}"
                     ng-repeat="entryKey in sectionKeys[section.key]">
                     <div class="cell">
+                        <a href="" ng-click="removeEntry(section.key, entryKey)">(x)</a>
                         <b>{{::entryKey}}</b>
-
                         <a href 
                         ng-mouseenter="showSuggestion(suggestion, section.key, entryKey, true)"
                         ng-mouseleave="showSuggestion(suggestion, section.key, entryKey, false)"

@@ -219,6 +219,19 @@ twlanLang.controller('DiffController', ['store', '$timeout', '$scope', function(
         }
     };
 
+    $scope.removeEntry = function(sectionKey, entryKey)
+    {
+        delete $scope.store.data[$scope.lang.src][sectionKey][entryKey];
+        delete $scope.store.data[$scope.lang.target][sectionKey][entryKey];
+    };
+
+    $scope.addNew = function(sectionKey, entryKey)
+    {
+        var keyname = prompt("Enter keyname");
+        if (keyname)
+        $scope.store.data[$scope.lang.src][sectionKey][keyname] = "";
+    }
+
     $scope.applySuggestion = function(suggestion, sectionKey, entryKey)
     {
         $scope.highlight.s = $scope.highlight.e = $scope.bak = null;
