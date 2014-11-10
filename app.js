@@ -11,6 +11,28 @@ twlanLang.controller('DiffController', ['store', '$timeout', '$scope', function(
     $scope.Object = Object;
     $scope.lang = {target: '', src: ''};
     $scope.section = {key: ''};
+    $scope.doRename = function()  {
+        if (!$scope.section.newkey) return;
+        if ($scope.store.data[$scope.lang.src].hasOwnProperty($scope.section.newkey) || $scope.store.data[$scope.lang.target].hasOwnProperty($scope.section.newkey))
+        {
+            if (!confirm("Do you really want to overwrite the already existing section?")) return;
+        }
+        $scope.store.data[$scope.lang.target][$scope.section.newkey] = $scope.store.data[$scope.lang.target][$scope.section.key];
+        $scope.store.data[$scope.lang.src][$scope.section.newkey] = $scope.store.data[$scope.lang.src][$scope.section.key];
+        delete $scope.store.data[$scope.lang.target][$scope.section.key];
+        delete $scope.store.data[$scope.lang.src][$scope.section.key];
+        $scope.section.key = $scope.section.newkey;
+    };
+    $scope.deleteSection = function(sec) {
+        delete $scope.store.data[$scope.lang.target][sec];
+        delete $scope.store.data[$scope.lang.src][sec];
+    };
+    $scope.addNewSection = function() {
+        var sec = prompt("Enter a new section name");
+        if (sec) {
+            $scope.store.data[$scope.lang.src][sec] = {};
+        }
+    };
 
     var threshold = 0;
     var lastThreshold = 0;
