@@ -268,7 +268,7 @@ twlanLang.controller('DiffController', ['store', '$timeout', '$scope', function(
         var getValue = function(lang)
         {
             var langObj = store.data[lang];
-            return JSON.stringify(langObj);
+            return JSON.stringify(langObj, null, 4);
         };
         var makeDLinks = function(target, lang) 
         {
