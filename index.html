@@ -74,7 +74,7 @@
 <body ng-app="twlanLang" ng-controller="DiffController">
     <ul id="sidebar" class="nav nav-pills nav-stacked sidebar col-xs-3">
         <li>
-            <a href="#" class="btn btn-success" ng-click="addNewSection()">Add new</a>
+            <a href="#" class="btn btn-success" ng-click="addNewSection()" ng-if="stats">Add new</a>
         </li>
         <li ng-repeat="s in sections" ng-class="{'active': section.key==s}">
             <a href="#"
@@ -161,7 +161,7 @@
                     ng-repeat="entryKey in sectionKeys[section.key]">
                     <div class="cell">
                         <a href="" ng-click="removeEntry(section.key, entryKey)">(x)</a>
-                        <b>{{::entryKey}}</b>
+                        <b><span ng-click="doRenameEntry(section.key, entryKey);">{{entryKey}}</span></b>
                         <a href 
                         ng-mouseenter="showSuggestion(suggestion, section.key, entryKey, true)"
                         ng-mouseleave="showSuggestion(suggestion, section.key, entryKey, false)"

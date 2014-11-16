@@ -23,6 +23,25 @@ twlanLang.controller('DiffController', ['store', '$timeout', '$scope', function(
         delete $scope.store.data[$scope.lang.src][$scope.section.key];
         $scope.section.key = $scope.section.newkey;
     };
+    $scope.doRenameEntry = function(section, key) {
+        var name = prompt("Enter new key name");
+        if (name) 
+        {
+            if (
+                ($scope.store.data[$scope.lang.src].hasOwnProperty(section) && $scope.store.data[$scope.lang.src][section].hasOwnProperty(name)) || 
+                ($scope.store.data[$scope.lang.target].hasOwnProperty(section) && $scope.store.data[$scope.lang.target][section].hasOwnProperty(name))
+            ) if (!confirm("Do you really want to overwrite the already existing key?")) return;
+
+            if ($scope.store.data[$scope.lang.src].hasOwnProperty(section)) {
+                $scope.store.data[$scope.lang.src][section][name] = $scope.store.data[$scope.lang.src][section][key];
+                delete $scope.store.data[$scope.lang.src][section][key];
+            }
+            if ($scope.store.data[$scope.lang.target].hasOwnProperty(section)) {
+                $scope.store.data[$scope.lang.target][section][name] = $scope.store.data[$scope.lang.target][section][key];
+                delete $scope.store.data[$scope.lang.target][section][key];
+            }
+        }
+    };
     $scope.deleteSection = function(sec) {
         delete $scope.store.data[$scope.lang.target][sec];
         delete $scope.store.data[$scope.lang.src][sec];
@@ -36,24 +55,27 @@ twlanLang.controller('DiffController', ['store', '$timeout', '$scope', function(
 
     var threshold = 0;
     var lastThreshold = 0;
+    var hitThreshold = 0;
     $(window).bind('mousewheel DOMMouseScroll', function(event) {
         if (!$scope.sections) return;
-        //console.log(event);
+
         var down = !(event.originalEvent.wheelDelta > 0 || event.originalEvent.detail < 0);
         if ($('#sidebar').has($(event.target)).length > 0) return;
 
         if (new Date().getTime() - lastThreshold > 1000)
+        {
             threshold = 0;
+            hitThreshold = 0;
+        }
         threshold += Math.abs((event.originalEvent.wheelDelta || event.originalEvent.detail * 40));
         lastThreshold = new Date().getTime();
         if (threshold >= 240) threshold = 0;
         else return;
         var elem = $('#main-container');
-        console.log(elem[0].scrollHeight - elem.scrollTop()); //1164
-        console.log(elem.outerHeight()); //591
 
-        if(down && elem[0].scrollHeight - elem.scrollTop() > elem.outerHeight() + 1) return threshold = 0;
-        if(!down && elem.scrollTop() != 0) return threshold = 0;
+        if (down && elem[0].scrollHeight - elem.scrollTop() > elem.outerHeight() + 1) return threshold = 0;
+        if (!down && elem.scrollTop() != 0) return threshold = 0;
+        if (hitThreshold < 3) return hitThreshold++;
         
         var _n = $scope.sections.indexOf($scope.section.key);
         if (_n == -1) return;
