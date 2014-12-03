@@ -234,8 +234,13 @@ twlanLang.controller('DiffController', ['store', '$timeout', '$scope', function(
 
     $scope.notSelf = function (section, entry)
     {
-        return function (value, index) {
-            return section != value.section || entry != value.key;
+        return function (value, index) 
+        {
+            var target = store.data[$scope.lang.target];
+            var src = store.data[$scope.lang.src];
+            return (section != value.section || entry != value.key) && //No duplicates
+                target[value.section] && target[value.section][value.key] && //Set in source and target
+                src[value.section] && src[value.section][value.key]
         };
     };
 
@@ -249,9 +254,11 @@ twlanLang.controller('DiffController', ['store', '$timeout', '$scope', function(
         if (!targets[suggestion.section]) return alert('Not set on target');
         if (hover)
         {
+            var val = targets[suggestion.section][suggestion.key];
+            if (!val) return;
             $scope.highlight.s = sectionKey;
             $scope.highlight.e = entryKey;
-            var val = targets[suggestion.section][suggestion.key];
+            $scope.bak = "";
             if (!targets[sectionKey]) targets[sectionKey] = {};
             else $scope.bak = targets[sectionKey][entryKey];
             targets[sectionKey][entryKey] = val; 
