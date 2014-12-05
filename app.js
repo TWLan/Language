@@ -11,6 +11,12 @@ twlanLang.controller('DiffController', ['store', '$timeout', '$scope', function(
     $scope.Object = Object;
     $scope.lang = {target: '', src: ''};
     $scope.section = {key: ''};
+    $scope.newLang = function() {
+        if (!$scope.lang.src) return alert("Please select the source language before!");
+        $scope.lang.target = prompt("Filename of the new language (short form like \"en.json\" for English)");
+        if (!$scope.lang.target) return alert("Please choose a name!");
+        $scope.store[$scope.lang.target] = {};
+    };
     $scope.doRename = function()  {
         if (!$scope.section.newkey) return;
         if ($scope.store.data[$scope.lang.src].hasOwnProperty($scope.section.newkey) || $scope.store.data[$scope.lang.target].hasOwnProperty($scope.section.newkey))
