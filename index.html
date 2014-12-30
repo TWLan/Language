@@ -80,7 +80,8 @@
             <a href="#"
             ng-init="section.key=!section.key?s:section.key;section.newkey=section.key" ng-click="section.key=s;section.newkey=section.key">
                 <b ng-class="{'text-success': section.key!=s, 'text-danger': stats.missingSections.indexOf(s) != -1, 
-                    'text-warning': stats.incompleteSections.indexOf(s) != -1}">{{s}}</b>
+                    'text-warning': stats.incompleteSections.indexOf(s) != -1,
+                    'text-info': stats.additionalSections.indexOf(s) != -1}">{{s}}</b>
                 <span ng-if="stats.missingSections.indexOf(s) != -1" class="pull-right label label-danger"> 
                 Section Missing <br>{{ stats.missingSectionKeys[s].length }} entries missing 
                 </span>
@@ -111,6 +112,7 @@
                     <div class="cell pdivider"><b>Target language</b> <a class="text-right" ng-click="newLang()">New</a></div>
                     <div class="cell pdivider" ng-if="stats"><b>Missing sections</b></div>
                     <div class="cell pdivider" ng-if="stats"><b>Incomplete sections</b></div>
+                    <div class="cell pdivider" ng-if="stats"><b>Additional sections</b></div>
                     <div class="cell pdivider" ng-if="stats"><b>Missing keys</b></div>
                     <div class="cell pdivider" ng-if="stats"></div>
                 </div>
@@ -123,6 +125,7 @@
                     </div>
                     <div class="cell pdivider" ng-if="stats"><b>{{stats.missingSections.length}}</b></div>
                     <div class="cell pdivider" ng-if="stats"><b>{{stats.incompleteSections.length}}</b></div>
+                    <div class="cell pdivider" ng-if="stats"><b>{{stats.additionalSections.length}}</b></div>
                     <div class="cell pdivider" ng-if="stats"><b>{{stats.missingKeys.length}}</b></div>
                     <div class="cell pdivider" ng-if="stats">
                         <a ng-click="exportTarget()" class="btn btn-primary btn-lg save-btn" role="button">Export</a>

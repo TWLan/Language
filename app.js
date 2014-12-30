@@ -127,6 +127,7 @@ twlanLang.controller('DiffController', ['store', '$timeout', '$scope', function(
         var sectionKeysRaw = {};
         var srcMap = {};
         var stats = {
+            additionalSections: [], //sections only existing in target
             missingSections: [],
             incompleteSections: [],
             missingKeys: [],
@@ -156,14 +157,18 @@ twlanLang.controller('DiffController', ['store', '$timeout', '$scope', function(
                     if (stats.missingSections.indexOf(section) == -1)
                         stats.missingSections.push(section);
                 }
-                else if (!srcSections || !srcSections[section]) return;
-                if (!targetSections || !targetSections[section] || !targetSections[section][_key])
+                else if (!targetSections[section][_key])
                 {
                     if (stats.missingSections.indexOf(section) == -1 && stats.incompleteSections.indexOf(section) == -1)
                         stats.incompleteSections.push(section);
                     stats.missingKeys.push(section + '.' + _key);
                     if (!stats.missingSectionKeys[section]) stats.missingSectionKeys[section] = [];
                     stats.missingSectionKeys[section].push(_key);
+                }
+                if (!srcSections || !srcSections[section] || !srcSections[section][_key])
+                {
+                    if (stats.additionalSections.indexOf(section) == -1)
+                        stats.additionalSections.push(section);
                 }
                 ++stats.keys;
             });
