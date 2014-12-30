@@ -19,14 +19,21 @@ twlanLang.controller('DiffController', ['store', '$timeout', '$scope', function(
     };
     $scope.doRename = function()  {
         if (!$scope.section.newkey) return;
+        var hasSrc = $scope.store.data[$scope.lang.src].hasOwnProperty($scope.section.key);
+        var hasTarget = $scope.store.data[$scope.lang.target].hasOwnProperty($scope.section.key);
+        
         if ($scope.store.data[$scope.lang.src].hasOwnProperty($scope.section.newkey) || $scope.store.data[$scope.lang.target].hasOwnProperty($scope.section.newkey))
         {
             if (!confirm("Do you really want to overwrite the already existing section?")) return;
         }
-        $scope.store.data[$scope.lang.target][$scope.section.newkey] = $scope.store.data[$scope.lang.target][$scope.section.key];
-        $scope.store.data[$scope.lang.src][$scope.section.newkey] = $scope.store.data[$scope.lang.src][$scope.section.key];
-        delete $scope.store.data[$scope.lang.target][$scope.section.key];
-        delete $scope.store.data[$scope.lang.src][$scope.section.key];
+        if (hasTarget) {
+            $scope.store.data[$scope.lang.target][$scope.section.newkey] = $scope.store.data[$scope.lang.target][$scope.section.key];
+            delete $scope.store.data[$scope.lang.target][$scope.section.key];
+        }
+        if (hasSrc) {
+            $scope.store.data[$scope.lang.src][$scope.section.newkey] = $scope.store.data[$scope.lang.src][$scope.section.key];
+            delete $scope.store.data[$scope.lang.src][$scope.section.key];
+        }
         $scope.section.key = $scope.section.newkey;
     };
     $scope.doRenameEntry = function(section, key) {
