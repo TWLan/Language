@@ -162,7 +162,10 @@ twlanLang.controller('DiffController', ['store', '$timeout', '$scope', function(
                 if (!targetSections || !targetSections[section]) 
                 {
                     if (stats.missingSections.indexOf(section) == -1)
+                    {
                         stats.missingSections.push(section);
+                    }
+                    stats.missingKeys.push(section + '.' + _key);
                 }
                 else if (!targetSections[section][_key])
                 {
